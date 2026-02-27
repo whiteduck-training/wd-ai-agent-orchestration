@@ -83,6 +83,10 @@ uv run <module>/agent_framework/<script>.py
 
 Both frameworks use the **same OpenAI API key** — one key powers the entire workshop.
 
+## Quick Reference
+
+Keep the **[CHEATSHEET.md](./CHEATSHEET.md)** open while coding — it has both APIs side by side with zero prose.
+
 ## Prerequisites
 
 - Python 3.12+
