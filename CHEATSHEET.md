@@ -7,10 +7,18 @@
 ```python
 # Flock                                  # Agent Framework
 from flock import Flock                  from agent_framework.openai import OpenAIResponsesClient
+                                         from agent_framework.azure import AzureOpenAIResponsesClient
 from flock.registry import flock_type    from agent_framework import WorkflowBuilder
 from pydantic import BaseModel, Field    from agent_framework import Executor, handler, executor
                                          from agent_framework import Case, Default
-flock = Flock()                          client = OpenAIResponsesClient()
+flock = Flock()                          # OpenAI mode:
+                                         client = OpenAIResponsesClient()
+                                         # Azure mode:
+                                         client = AzureOpenAIResponsesClient(
+                                             api_key="...",
+                                             endpoint="https://...cognitiveservices.azure.com/",
+                                             deployment_name="...",
+                                         )
 ```
 
 ## Single Agent
@@ -150,9 +158,16 @@ value = ctx.get_state("key")
 ## Environment Variables
 
 ```
-OPENAI_API_KEY=sk-...              # Both frameworks
-DEFAULT_MODEL=openai/gpt-4.1      # Flock (litellm format)
-OPENAI_RESPONSES_MODEL_ID=gpt-4.1 # Agent Framework
+# OpenAI mode
+OPENAI_API_KEY=sk-...
+DEFAULT_MODEL=openai/gpt-4.1
+OPENAI_RESPONSES_MODEL_ID=gpt-4.1
+
+# Azure mode (shared creds for both frameworks)
+AZURE_API_KEY=...
+AZURE_API_BASE=https://...cognitiveservices.azure.com/
+AZURE_API_VERSION=2025-04-01-preview
+DEFAULT_MODEL=azure/<deployment_name>
 ```
 
 ## Running Examples

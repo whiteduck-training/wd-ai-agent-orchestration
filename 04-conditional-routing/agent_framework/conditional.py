@@ -13,6 +13,7 @@ KEY CONCEPTS:
 """
 
 import asyncio
+import os
 from dataclasses import dataclass
 
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ from agent_framework import (
     executor,
     handler,
 )
+from agent_framework.azure import AzureOpenAIResponsesClient
 from agent_framework.openai import OpenAIResponsesClient
 
 
@@ -42,6 +44,28 @@ from agent_framework.openai import OpenAIResponsesClient
 # ============================================================================
 
 load_dotenv()
+
+
+def _clean_env(name: str) -> str:
+    return os.getenv(name, "").strip().strip('"').strip("'")
+
+
+def create_client():
+    azure_api_key = _clean_env("AZURE_API_KEY")
+    azure_api_base = _clean_env("AZURE_API_BASE")
+    azure_api_version = _clean_env("AZURE_API_VERSION") or None
+    default_model = _clean_env("DEFAULT_MODEL")
+
+    if azure_api_key and azure_api_base and default_model.startswith("azure/"):
+        deployment_name = default_model.split("/", 1)[1]
+        return AzureOpenAIResponsesClient(
+            api_key=azure_api_key,
+            endpoint=azure_api_base,
+            api_version=azure_api_version,
+            deployment_name=deployment_name,
+        )
+
+    return OpenAIResponsesClient()
 
 
 @dataclass
@@ -149,7 +173,7 @@ async def standard_handler(ticket: ClassifiedTicket, ctx: WorkflowContext[Never,
 # This is CENTRALIZED routing — one switch-case decides the path.
 # ============================================================================
 
-client = OpenAIResponsesClient()
+client = create_client()
 
 classifier_agent = AgentExecutor(
     client.as_agent(

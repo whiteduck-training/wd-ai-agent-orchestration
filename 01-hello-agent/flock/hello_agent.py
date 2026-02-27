@@ -126,7 +126,7 @@ async def main():
         print()
         print(f"  Style: {poem.style}")
     else:
-        print("  No poem generated. Check your OPENAI_API_KEY in .env")
+        print("  No poem generated. Check your .env credentials (OpenAI or Azure mode).")
 
     print()
     print("=" * 60)

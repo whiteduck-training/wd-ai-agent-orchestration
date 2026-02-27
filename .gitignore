@@ -47,3 +47,7 @@ logs/
 # mypy / pytype
 .mypy_cache/
 .pytype/
+
+# External reference repositories
+external/*
+!external/README.md

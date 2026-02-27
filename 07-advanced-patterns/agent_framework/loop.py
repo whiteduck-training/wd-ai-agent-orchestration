@@ -13,6 +13,7 @@ KEY CONCEPTS:
 """
 
 import asyncio
+import os
 
 from dotenv import load_dotenv
 from typing_extensions import Never
@@ -30,6 +31,7 @@ from agent_framework import (
     executor,
     handler,
 )
+from agent_framework.azure import AzureOpenAIResponsesClient
 from agent_framework.openai import OpenAIResponsesClient
 
 
@@ -38,6 +40,28 @@ from agent_framework.openai import OpenAIResponsesClient
 # ============================================================================
 
 load_dotenv()
+
+
+def _clean_env(name: str) -> str:
+    return os.getenv(name, "").strip().strip('"').strip("'")
+
+
+def create_client():
+    azure_api_key = _clean_env("AZURE_API_KEY")
+    azure_api_base = _clean_env("AZURE_API_BASE")
+    azure_api_version = _clean_env("AZURE_API_VERSION") or None
+    default_model = _clean_env("DEFAULT_MODEL")
+
+    if azure_api_key and azure_api_base and default_model.startswith("azure/"):
+        deployment_name = default_model.split("/", 1)[1]
+        return AzureOpenAIResponsesClient(
+            api_key=azure_api_key,
+            endpoint=azure_api_base,
+            api_version=azure_api_version,
+            deployment_name=deployment_name,
+        )
+
+    return OpenAIResponsesClient()
 
 QUALITY_THRESHOLD = 7
 MAX_ITERATIONS = 3
@@ -137,7 +161,7 @@ async def finalize(eval_result: str, ctx: WorkflowContext[Never, str]) -> None:
 #     done             → finalize (EXIT)
 # ============================================================================
 
-client = OpenAIResponsesClient()
+client = create_client()
 
 writer_agent = AgentExecutor(
     client.as_agent(

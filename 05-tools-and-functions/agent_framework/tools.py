@@ -13,6 +13,7 @@ KEY CONCEPTS:
 """
 
 import asyncio
+import os
 import random
 from typing import Annotated
 
@@ -20,6 +21,7 @@ from dotenv import load_dotenv
 from pydantic import Field
 
 from agent_framework import tool
+from agent_framework.azure import AzureOpenAIResponsesClient
 from agent_framework.openai import OpenAIResponsesClient
 
 
@@ -36,6 +38,28 @@ from agent_framework.openai import OpenAIResponsesClient
 # ============================================================================
 
 load_dotenv()
+
+
+def _clean_env(name: str) -> str:
+    return os.getenv(name, "").strip().strip('"').strip("'")
+
+
+def create_client():
+    azure_api_key = _clean_env("AZURE_API_KEY")
+    azure_api_base = _clean_env("AZURE_API_BASE")
+    azure_api_version = _clean_env("AZURE_API_VERSION") or None
+    default_model = _clean_env("DEFAULT_MODEL")
+
+    if azure_api_key and azure_api_base and default_model.startswith("azure/"):
+        deployment_name = default_model.split("/", 1)[1]
+        return AzureOpenAIResponsesClient(
+            api_key=azure_api_key,
+            endpoint=azure_api_base,
+            api_version=azure_api_version,
+            deployment_name=deployment_name,
+        )
+
+    return OpenAIResponsesClient()
 
 
 @tool(approval_mode="never_require")
@@ -97,7 +121,7 @@ def get_attractions(
 # so the LLM knows to use them.
 # ============================================================================
 
-client = OpenAIResponsesClient()
+client = create_client()
 
 travel_agent = client.as_agent(
     name="travel_planner",

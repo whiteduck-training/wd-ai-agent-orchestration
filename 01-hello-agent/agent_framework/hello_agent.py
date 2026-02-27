@@ -6,25 +6,27 @@ Build your first Agent Framework agent and understand the direct-call pattern:
 create a client, configure an agent with instructions, and run it.
 
 KEY CONCEPTS:
-- OpenAIResponsesClient reads OPENAI_API_KEY and OPENAI_RESPONSES_MODEL_ID from env
+- create_client() auto-selects Azure or OpenAI based on env vars
 - client.as_agent() creates a configured agent
 - agent.run() executes and returns a response
 - Streaming with agent.run(stream=True) for real-time output
 """
 
 import asyncio
+import os
 
 from dotenv import load_dotenv
 
+from agent_framework.azure import AzureOpenAIResponsesClient
 from agent_framework.openai import OpenAIResponsesClient
 
 
 # ============================================================================
 # STEP 1: Load Environment & Create Client
 # ============================================================================
-# The OpenAIResponsesClient reads from environment variables:
-#   - OPENAI_API_KEY: Your API key
-#   - OPENAI_RESPONSES_MODEL_ID: Which model to use (e.g., gpt-4.1)
+# Client selection reads from environment variables:
+#   - Azure mode: AZURE_API_KEY + AZURE_API_BASE + DEFAULT_MODEL=azure/<deployment>
+#   - OpenAI mode: OPENAI_API_KEY (+ optional OPENAI_RESPONSES_MODEL_ID)
 #
 # Unlike Flock's type-based approach, Agent Framework uses a client
 # that you configure directly with instructions.
@@ -32,7 +34,30 @@ from agent_framework.openai import OpenAIResponsesClient
 
 load_dotenv()
 
-client = OpenAIResponsesClient()
+
+def _clean_env(name: str) -> str:
+    return os.getenv(name, "").strip().strip('"').strip("'")
+
+
+def create_client():
+    azure_api_key = _clean_env("AZURE_API_KEY")
+    azure_api_base = _clean_env("AZURE_API_BASE")
+    azure_api_version = _clean_env("AZURE_API_VERSION") or None
+    default_model = _clean_env("DEFAULT_MODEL")
+
+    if azure_api_key and azure_api_base and default_model.startswith("azure/"):
+        deployment_name = default_model.split("/", 1)[1]
+        return AzureOpenAIResponsesClient(
+            api_key=azure_api_key,
+            endpoint=azure_api_base,
+            api_version=azure_api_version,
+            deployment_name=deployment_name,
+        )
+
+    return OpenAIResponsesClient()
+
+
+client = create_client()
 
 
 # ============================================================================

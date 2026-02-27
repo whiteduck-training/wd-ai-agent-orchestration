@@ -58,14 +58,14 @@ Before starting Module 01, make sure you have:
 
 - [ ] **GitHub Codespace running** (or local environment with Python 3.12+ and uv)
 - [ ] **Dependencies installed**: `uv sync`
-- [ ] **Environment configured**: `.env` file with your `OPENAI_API_KEY`
+- [ ] **Environment configured**: `.env` file with either OpenAI credentials or Azure credentials
 - [ ] **Smoke test passing**:
 
 ```bash
 uv run 00-introduction/smoke_test.py
 ```
 
-This verifies Python version, imports, API key, and makes one test call through each framework. You should see all `[PASS]` before moving on.
+This verifies Python version, imports, provider configuration, and makes one test call through each framework. You should see all `[PASS]` before moving on.
 
 ## What's Next
 
