@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Workshop: AI Agent Orchestration — Flock vs Microsoft Agent Framework"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "flock-core>=0.5.36",
     "agent-framework-core",
@@ -13,3 +13,23 @@ dependencies = [
 
 [tool.uv]
 prerelease = "allow"
+
+# flock-core pins exact versions of opentelemetry, mcp, and jaeger that
+# conflict with agent-framework-core's requirements. Since this is a
+# workshop environment (not production), we override the pins to the
+# versions agent-framework-core needs. Flock's core functionality
+# (blackboard, agents, types) is unaffected by these tracing/protocol
+# version changes.
+override-dependencies = [
+    "opentelemetry-sdk>=1.39.0",
+    "opentelemetry-api>=1.39.0",
+    "opentelemetry-exporter-otlp>=1.39.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.39.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.39.0",
+    "opentelemetry-exporter-otlp-proto-common>=1.39.0",
+    "opentelemetry-semantic-conventions>=0.50b0",
+    "opentelemetry-proto>=1.39.0",
+    "opentelemetry-exporter-jaeger-proto-grpc>=1.21.0",
+    "googleapis-common-protos>=1.60.0",
+    "mcp>=1.24.0",
+]
